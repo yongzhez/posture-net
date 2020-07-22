@@ -1,26 +1,48 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef, useEffect, useState } from 'react';
+// import posenet from '@tensorflow-models/posenet';
 
-function App() {
+
+const Pose = () => {
+  // const [isLoading, setIsLoading] = useState(false);
+  const videoRef = useRef();
+
+  // const [userVideo, setUserVideo] = useState(null);
+
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(stream => {
+        videoRef.current.srcObject = stream;
+      })
+      .catch(err => console.log(err))
+  },[]);
+
+  // useEffect(() => {
+  //   const net = async () => {
+  //     setIsLoading(true);
+
+  //     const blarg = await posenet.load({
+  //       architecture: 'ResNet50',
+  //       outputStride: 32,
+  //       inputResolution: { width: 257, height: 257 },
+  //       quantBytes: 2
+  //     });
+  //     const theThing = await net.estimateSinglePose(imageElement, {
+  //       flipHorizontal: false
+  //     });
+
+  //     setIsLoading(false);
+  //   }
+  //   net();
+  // },[])
+
+  // if (isLoading) {
+  //   return <div>it's loading</div>;
+  // }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+       <video ref={videoRef} onCanPlay={() => videoRef.current.play()}></video>
     </div>
   );
 }
 
-export default App;
+export default Pose;
