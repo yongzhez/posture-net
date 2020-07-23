@@ -1,12 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-// import posenet from '@tensorflow-models/posenet';
-
+import * as posenet from "@tensorflow-models/posenet";
 
 const Pose = () => {
-  // const [isLoading, setIsLoading] = useState(false);
+  const [videoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef();
-
-  // const [userVideo, setUserVideo] = useState(null);
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -16,31 +13,26 @@ const Pose = () => {
       .catch(err => console.log(err))
   },[]);
 
-  // useEffect(() => {
-  //   const net = async () => {
-  //     setIsLoading(true);
+  useEffect(() => {
+    if (videoReady) {
+      const setupAndStartModel = async () => {
+        const poseNetModel = await posenet.load();
+        debugger;
+        const theThing = await poseNetModel.estimateSinglePose(videoRef.current, {
+          flipHorizontal: false
+        });
+        console.log(theThing);
+      }
+      setupAndStartModel();
+    }
+  },[videoReady])
 
-  //     const blarg = await posenet.load({
-  //       architecture: 'ResNet50',
-  //       outputStride: 32,
-  //       inputResolution: { width: 257, height: 257 },
-  //       quantBytes: 2
-  //     });
-  //     const theThing = await net.estimateSinglePose(imageElement, {
-  //       flipHorizontal: false
-  //     });
-
-  //     setIsLoading(false);
-  //   }
-  //   net();
-  // },[])
-
-  // if (isLoading) {
-  //   return <div>it's loading</div>;
-  // }
   return (
     <div>
-       <video ref={videoRef} onCanPlay={() => videoRef.current.play()}></video>
+       <video ref={videoRef} onCanPlay={() => {
+         videoRef.current.play();
+         setIsVideoReady(true);
+       }}></video>
     </div>
   );
 }
