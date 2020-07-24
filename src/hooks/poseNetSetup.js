@@ -6,7 +6,6 @@ const usePoseNet = ({ videoRef, videoIsReady }) => {
         if (videoIsReady) {
           const setupAndStartModel = async () => {
             const poseNetModel = await posenet.load();
-            debugger;
             const theThing = await poseNetModel.estimateSinglePose(videoRef.current, {
               flipHorizontal: false
             });
