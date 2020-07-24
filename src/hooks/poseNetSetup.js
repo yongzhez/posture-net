@@ -1,25 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import * as posenet from "@tensorflow-models/posenet";
+import { VIDEO_VARIABLES } from '../App';
 
-const setupAndStartModel = async setPoseNet => {
+const setupAndStartModel = async (setPoseNet) => {
   const poseNetModel = await posenet.load({
-    architecture: 'ResNet50',
+    architecture: "ResNet50",
     outputStride: 32,
-    inputResolution: { width: 257, height: 200 },
-    quantBytes: 2
+    inputResolution: VIDEO_VARIABLES,
+    quantBytes: 2,
   });
   setPoseNet(poseNetModel);
-}
+};
 
 const usePoseNet = ({ videoRef, videoIsReady }) => {
-    const [poseNet, setPoseNet] = useState(null);
-    useEffect(() => {
-      if (videoIsReady) {
-        setupAndStartModel(setPoseNet);
-      }
-    },[videoRef, videoIsReady])
-    return poseNet;
-}
+  const [poseNet, setPoseNet] = useState(null);
+  useEffect(() => {
+    if (videoIsReady) {
+      setupAndStartModel(setPoseNet);
+    }
+  }, [videoRef, videoIsReady]);
+  return poseNet;
+};
 
 export const drawKeyPoints = (
   keypoints,
@@ -28,15 +29,15 @@ export const drawKeyPoints = (
   pointRadius = 3,
   skeletonColor = "green"
 ) => {
-  keypoints.forEach(keypoint => {
+  keypoints.forEach((keypoint) => {
     if (keypoint.score >= 0.5) {
-      const {x, y} = keypoint.position
-      canvasRef.beginPath()
-      canvasRef.arc(x * scale, y * scale, pointRadius, 0, 2 * Math.PI)
-      canvasRef.fillStyle = skeletonColor
-      canvasRef.fill()
+      const { x, y } = keypoint.position;
+      canvasRef.beginPath();
+      canvasRef.arc(x * scale, y * scale, pointRadius, 0, 2 * Math.PI);
+      canvasRef.fillStyle = skeletonColor;
+      canvasRef.fill();
     }
-  })
-}
+  });
+};
 
 export default usePoseNet;
