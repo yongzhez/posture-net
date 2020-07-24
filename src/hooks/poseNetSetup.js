@@ -29,11 +29,13 @@ export const drawKeyPoints = (
   skeletonColor = "green"
 ) => {
   keypoints.forEach(keypoint => {
-    const {x, y} = keypoint.position
+    if (keypoint.score >= 0.5) {
+      const {x, y} = keypoint.position
       canvasRef.beginPath()
       canvasRef.arc(x * scale, y * scale, pointRadius, 0, 2 * Math.PI)
       canvasRef.fillStyle = skeletonColor
       canvasRef.fill()
+    }
   })
 }
 

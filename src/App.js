@@ -20,14 +20,16 @@ const Pose = () => {
   useEffect(() => {
     if (videoIsReady && !!model) {
       const animate = async () => {
-        canvasRef.current.getContext('2d').drawImage(videoRef.current, 0, 0, 640, 360);
+        const canvasContext = canvasRef.current.getContext('2d');
+        canvasContext.drawImage(videoRef.current, 0, 0, 640, 360);
+
         const { keypoints, score } = await model.estimateSinglePose(videoRef.current, {
           flipHorizontal: false
         });
         if (score >= 0.39) {
           drawKeyPoints(
             keypoints,
-            canvasRef.current.getContext('2d')
+            canvasContext
           )
         }
         setTimeout(function() {
