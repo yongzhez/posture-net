@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import * as posenet from "@tensorflow-models/posenet";
+import usePoseNet from './hooks/poseNetSetup';
 
 const Pose = () => {
-  const [videoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef();
+  const [videoIsReady, setVideoIsReady] = useState(false);
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -13,25 +13,13 @@ const Pose = () => {
       .catch(err => console.log(err))
   },[]);
 
-  useEffect(() => {
-    if (videoReady) {
-      const setupAndStartModel = async () => {
-        const poseNetModel = await posenet.load();
-        debugger;
-        const theThing = await poseNetModel.estimateSinglePose(videoRef.current, {
-          flipHorizontal: false
-        });
-        console.log(theThing);
-      }
-      setupAndStartModel();
-    }
-  },[videoReady])
+  usePoseNet({ videoRef, videoIsReady });
 
   return (
     <div>
        <video ref={videoRef} onCanPlay={() => {
          videoRef.current.play();
-         setIsVideoReady(true);
+         setVideoIsReady(true);
        }}></video>
     </div>
   );
