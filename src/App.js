@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import usePoseNet from './hooks/poseNetSetup';
+import usePoseNet, { drawKeyPoints } from './hooks/poseNetSetup';
 
 const Pose = () => {
   const videoRef = useRef();
+  const canvasRef = useRef();
   const [videoIsReady, setVideoIsReady] = useState(false);
   const [videoError, setVideoError] = useState(null);
 
@@ -14,18 +15,43 @@ const Pose = () => {
       .catch(err => setVideoError(err))
   },[]);
 
-  usePoseNet({ videoRef, videoIsReady });
+  const model = usePoseNet({ videoRef, videoIsReady });
+
+  useEffect(() => {
+    if (videoIsReady && !!model) {
+      const animate = async () => {
+        canvasRef.current.getContext('2d').drawImage(videoRef.current, 0, 0, 640, 360);
+        const { keypoints, score } = await model.estimateSinglePose(videoRef.current, {
+          flipHorizontal: false
+        });
+        if (score >= 0.39) {
+          drawKeyPoints(
+            keypoints,
+            canvasRef.current.getContext('2d')
+          )
+        }
+        setTimeout(function() {
+          animate();
+        }, 0);
+      }
+      animate();
+    }
+  })
 
   if (videoError) {
+    console.log(videoError);
     return <div>there was an error loading, make sure your browser supports webcam or that your webcam is turned on</div>
   }
 
   return (
     <div>
-       <video ref={videoRef} onCanPlay={() => {
+       <video width="640" height="360" ref={videoRef} onCanPlay={() => {
          videoRef.current.play();
          setVideoIsReady(true);
        }}></video>
+       <div>
+        <canvas ref={canvasRef} id="c1" width="640" height="360"></canvas>
+      </div>
     </div>
   );
 }
