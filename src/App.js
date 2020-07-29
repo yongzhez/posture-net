@@ -1,19 +1,18 @@
 import React, { useRef, useEffect, useState } from "react";
 import usePoseNet, { drawKeyPoints } from "./hooks/poseNetSetup";
+import { usePostureObserver } from './hooks/postureObserver';
 
-export const VIDEO_VARIABLES = {
-  width: 640,
-  height: 360,
-};
-
-const MINIMUM_CONFIDENCE_SCORE = 0.39;
+import { VIDEO_VARIABLES, MINIMUM_CONFIDENCE_SCORE } from './config.json';
 
 const Pose = () => {
   const videoRef = useRef();
   const canvasRef = useRef();
+  const keyPointsRef = useRef([]);
+  const [startingPoints, setStartingPoints] = useState([]);
   const [videoIsReady, setVideoIsReady] = useState(false);
   const [videoError, setVideoError] = useState(null);
 
+  // SETUP CAMERA
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "environment" } })
@@ -23,8 +22,10 @@ const Pose = () => {
       .catch((err) => setVideoError(err));
   }, []);
 
+  // SETUP POSENET WHEN CAMERA IS READY
   const model = usePoseNet({ videoRef, videoIsReady });
 
+  // ONLY WHEN CAMERA AND POSENET IS READY, START RECORDING POSES
   useEffect(() => {
     if (videoIsReady && !!model) {
       const animate = async () => {
@@ -37,15 +38,13 @@ const Pose = () => {
           VIDEO_VARIABLES.height
         );
 
-        const { keypoints, score } = await model.estimateSinglePose(
-          videoRef.current,
-          {
-            flipHorizontal: false,
-          }
-        );
+        const { keypoints, score } = await model.estimateSinglePose(videoRef.current,{ flipHorizontal: false });
         if (score >= MINIMUM_CONFIDENCE_SCORE) {
+          keyPointsRef.current = keypoints;
           drawKeyPoints(keypoints, canvasContext);
         }
+        console.log(keyPointsRef);
+
         setTimeout(function () {
           animate();
         }, 0);
@@ -53,6 +52,8 @@ const Pose = () => {
       animate();
     }
   });
+
+  // usePostureObserver({ keypoints:posePoints, startingPoints, minDeviationPercentage: 15 });
 
   if (videoError) {
     console.log(videoError);
@@ -63,7 +64,6 @@ const Pose = () => {
       </div>
     );
   }
-
   return (
     <div>
       <video
@@ -83,6 +83,9 @@ const Pose = () => {
           id="c1"
         ></canvas>
       </div>
+      <button onClick={() => {
+        setStartingPoints(keyPointsRef);
+      }}>Set starting points</button>
     </div>
   );
 };

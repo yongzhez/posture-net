@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import * as posenet from "@tensorflow-models/posenet";
-import { VIDEO_VARIABLES } from '../App';
+import { VIDEO_VARIABLES, KEYPOINT_CONFIDENCE } from '../config.json';
 
-const setupAndStartModel = async (setPoseNet) => {
+const setupAndStartModel = async setPoseNet => {
   const poseNetModel = await posenet.load({
     architecture: "ResNet50",
     outputStride: 32,
@@ -30,7 +30,7 @@ export const drawKeyPoints = (
   skeletonColor = "green"
 ) => {
   keypoints.forEach((keypoint) => {
-    if (keypoint.score >= 0.5) {
+    if (keypoint.score >= KEYPOINT_CONFIDENCE) {
       const { x, y } = keypoint.position;
       canvasRef.beginPath();
       canvasRef.arc(x * scale, y * scale, pointRadius, 0, 2 * Math.PI);

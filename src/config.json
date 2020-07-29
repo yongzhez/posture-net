@@ -1,0 +1,8 @@
+{
+	"VIDEO_VARIABLES": {
+		"width": 640,
+		"height": 360
+	},
+	"MINIMUM_CONFIDENCE_SCORE": 0.35,
+	"KEYPOINT_CONFIDENCE": 0.5
+}
