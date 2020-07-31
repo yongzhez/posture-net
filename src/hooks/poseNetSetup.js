@@ -25,15 +25,13 @@ const usePoseNet = ({ videoRef, videoIsReady }) => {
 export const drawKeyPoints = (
   keypoints,
   canvasRef,
-  scale = 1,
-  pointRadius = 3,
   skeletonColor = "green"
 ) => {
   keypoints.forEach((keypoint) => {
     if (keypoint.score >= KEYPOINT_CONFIDENCE) {
       const { x, y } = keypoint.position;
       canvasRef.beginPath();
-      canvasRef.arc(x * scale, y * scale, pointRadius, 0, 2 * Math.PI);
+      canvasRef.arc(x, y, 4, 0, 2 * Math.PI, false)
       canvasRef.fillStyle = skeletonColor;
       canvasRef.fill();
     }
