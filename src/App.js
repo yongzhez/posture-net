@@ -16,9 +16,15 @@ const Pose = () => {
   // SETUP CAMERA
   useEffect(() => {
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment", frameRate: { ideal: 30, max: 30 } } })
+      .getUserMedia({ video: { facingMode: "environment", video: { width: VIDEO_VARIABLES.width, height: VIDEO_VARIABLES.height} } })
       .then((stream) => {
         videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = function(e) {
+          videoRef.current.play();
+          setVideoIsReady(true);
+        };
+        videoRef.current.width = VIDEO_VARIABLES.width;
+        videoRef.current.height = VIDEO_VARIABLES.height;
       })
       .catch((err) => setVideoError(err));
   }, []);
@@ -77,23 +83,16 @@ const Pose = () => {
   return (
     <div>
       <video
+        style={{ position: "fixed", zIndex: -1 }}
+        ref={videoRef}
+        autoPlay
+      ></video>
+      <canvas
         width={VIDEO_VARIABLES.width}
         height={VIDEO_VARIABLES.height}
-        ref={videoRef}
-        display="none"
-        onCanPlay={() => {
-          videoRef.current.play();
-          setVideoIsReady(true);
-        }}
-      ></video>
-      <div>
-        <canvas
-          width={VIDEO_VARIABLES.width}
-          height={VIDEO_VARIABLES.height}
-          ref={canvasRef}
-          id="c1"
-        ></canvas>
-      </div>
+        ref={canvasRef}
+        id="c1"
+      ></canvas>
       <button onClick={() => {
         setStartingPoints(keyPointsRef.current);
       }}>
