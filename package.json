@@ -1,6 +1,7 @@
 {
   "name": "posenet",
   "version": "0.1.0",
+  "homepage": "https://yongzhez.github.io/posture-net/",
   "private": true,
   "dependencies": {
     "@tensorflow-models/posenet": "^2.2.1",
