@@ -2,6 +2,7 @@
   "name": "posenet",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://yongzhez.github.io/posture-net/build",
   "dependencies": {
     "@tensorflow-models/posenet": "^2.2.1",
     "@tensorflow/tfjs-converter": "^1.3.0",
