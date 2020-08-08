@@ -32,7 +32,7 @@ const LoadingSpinner = styled.div`
 `;
 
 const LoadingContainer = styled.div`
-  z-index: 2;
+  z-index: 1;
   height: 1000px;
   width: 1000px;
 `

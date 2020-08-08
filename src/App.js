@@ -9,10 +9,12 @@ const Pose = () => {
   const videoRef = useRef();
   const canvasRef = useRef();
   const keyPointsRef = useRef([]);
+  const timeOutOfPosture = useRef(0);
 
   const [startingPoints, setStartingPoints] = useState([]);
   const [videoIsReady, setVideoIsReady] = useState(false);
   const [videoError, setVideoError] = useState(null);
+  const [isOutOfPosture, setIsOutOfPosture] = useState(false);
 
   // SETUP CAMERA
   useEffect(() => {
@@ -58,7 +60,13 @@ const Pose = () => {
         }
         if (startingPoints.length > 0) {
           let isPostureOkay = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints, minDeviationPercentage: 40});
-          console.log(isPostureOkay);
+          if (!isPostureOkay && timeOutOfPosture.current < 600) {
+            timeOutOfPosture.current ++;
+          }
+          if (timeOutOfPosture.current === 600) {
+            setIsOutOfPosture(true);
+          }
+          console.log(timeOutOfPosture.current);
         }
       };
 
@@ -95,16 +103,29 @@ const Pose = () => {
         ref={canvasRef}
         id="c1"
       ></canvas>
-      <button onClick={() => {
-        setStartingPoints(keyPointsRef.current);
-      }}>
-        Set starting points
-      </button>
-      <button onClick={() => {
-        setStartingPoints([]);
-      }}>
-        Stop posture tracking
-      </button>
+      <div>
+        <button onClick={() => {
+          setStartingPoints(keyPointsRef.current);
+        }}>
+          Set starting points
+        </button>
+        <button onClick={() => {
+          setStartingPoints([]);
+        }}>
+          Stop posture tracking
+        </button>
+        {isOutOfPosture && (
+          <div>
+            <p>uh oh you're out of posture, click the button once you're back in posture to reset</p>
+            <button onClick={() => {
+              setIsOutOfPosture(false);
+              timeOutOfPosture.current = 0;
+            }}>
+              reset
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
