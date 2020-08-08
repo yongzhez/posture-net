@@ -3,12 +3,7 @@ import * as posenet from "@tensorflow-models/posenet";
 import { VIDEO_VARIABLES, KEYPOINT_CONFIDENCE } from '../config.json';
 
 const setupAndStartModel = async setPoseNet => {
-  const poseNetModel = await posenet.load({
-    architecture: "ResNet50",
-    outputStride: 32,
-    inputResolution: VIDEO_VARIABLES,
-    quantBytes: 2,
-  });
+  const poseNetModel = await posenet.load();
   setPoseNet(poseNetModel);
 };
 

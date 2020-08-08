@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import usePoseNet, { drawKeyPoints } from "./hooks/poseNetSetup";
 import { postureObserverHelper } from './hooks/postureObserver';
 
+import LoadingSpinner from './component/Loading';
 import { VIDEO_VARIABLES, MINIMUM_CONFIDENCE_SCORE } from './config.json';
 
 const Pose = () => {
@@ -35,13 +36,13 @@ const Pose = () => {
   // ONLY WHEN CAMERA AND POSENET IS READY, START RECORDING POSES
   useEffect(() => {
     let requestId;
-    const canvasContext = canvasRef.current.getContext("2d");
 
     function cleanUp() {
       cancelAnimationFrame(requestId)
     }
 
     if (videoIsReady && !!model) {
+      const canvasContext = canvasRef.current.getContext("2d");
       const estimate = async () => {
         const { keypoints, score } = await model.estimateSinglePose(videoRef.current,{ flipHorizontal: false });
         canvasContext.drawImage(
@@ -82,6 +83,7 @@ const Pose = () => {
 
   return (
     <div>
+      <LoadingSpinner videoIsReady={videoIsReady} isModelReady={!!model} />
       <video
         style={{ position: "fixed", zIndex: -1 }}
         ref={videoRef}
