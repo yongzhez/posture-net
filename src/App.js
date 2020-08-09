@@ -103,29 +103,31 @@ const Pose = () => {
         ref={canvasRef}
         id="c1"
       ></canvas>
-      <div>
-        <button onClick={() => {
-          setStartingPoints(keyPointsRef.current);
-        }}>
-          Set starting points
-        </button>
-        <button onClick={() => {
-          setStartingPoints([]);
-        }}>
-          Stop posture tracking
-        </button>
-        {isOutOfPosture && (
-          <div>
-            <p>uh oh you're out of posture, click the button once you're back in posture to reset</p>
-            <button onClick={() => {
-              setIsOutOfPosture(false);
-              timeOutOfPosture.current = 0;
-            }}>
-              reset
-            </button>
-          </div>
-        )}
-      </div>
+      {(videoIsReady || !!model) && (
+        <div>
+          <button onClick={() => {
+            setStartingPoints(keyPointsRef.current);
+          }}>
+            Set starting points
+          </button>
+          <button onClick={() => {
+            setStartingPoints([]);
+          }}>
+            Stop posture tracking
+          </button>
+          {isOutOfPosture && (
+            <div>
+              <p>uh oh you're out of posture, click the button once you're back in posture to reset</p>
+              <button onClick={() => {
+                setIsOutOfPosture(false);
+                timeOutOfPosture.current = 0;
+              }}>
+                reset
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
