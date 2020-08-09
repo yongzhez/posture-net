@@ -105,8 +105,10 @@ const Pose = () => {
       ></canvas>
       {(videoIsReady || !!model) && (
         <div>
-          <button onClick={() => {
+          <button disabled={startingPoints.length > 0 && !isOutOfPosture} onClick={() => {
+            setIsOutOfPosture(false);
             setStartingPoints(keyPointsRef.current);
+            timeOutOfPosture.current = 0;
           }}>
             Set starting points
           </button>
@@ -117,13 +119,7 @@ const Pose = () => {
           </button>
           {isOutOfPosture && (
             <div>
-              <p>uh oh you're out of posture, click the button once you're back in posture to reset</p>
-              <button onClick={() => {
-                setIsOutOfPosture(false);
-                timeOutOfPosture.current = 0;
-              }}>
-                reset
-              </button>
+              <p>uh oh you're out of posture, click the "Set starting points" once you're back in posture to reset</p>
             </div>
           )}
         </div>
