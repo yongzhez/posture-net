@@ -1,8 +1,10 @@
 import React, { useRef, useEffect, useState } from "react";
+
 import usePoseNet, { drawKeyPoints } from "./hooks/poseNetSetup";
 import { postureObserverHelper } from './hooks/postureObserver';
 
-import LoadingSpinner from './component/Loading';
+import LoadingSpinner from './component/LoadingSpinner';
+import PageContainer from './component/PageContainer';
 import { VIDEO_VARIABLES, MINIMUM_CONFIDENCE_SCORE } from './config.json';
 
 const Pose = () => {
@@ -90,7 +92,7 @@ const Pose = () => {
   }
 
   return (
-    <div>
+    <PageContainer>
       <LoadingSpinner videoIsReady={videoIsReady} isModelReady={!!model} />
       <video
         style={{ position: "fixed", zIndex: -1 }}
@@ -104,7 +106,7 @@ const Pose = () => {
         id="c1"
       ></canvas>
       {(videoIsReady || !!model) && (
-        <div>
+        <div style={{ marginTop: "30px" }}>
           <button disabled={startingPoints.length > 0 && !isOutOfPosture} onClick={() => {
             setIsOutOfPosture(false);
             setStartingPoints(keyPointsRef.current);
@@ -124,7 +126,7 @@ const Pose = () => {
           )}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 };
 

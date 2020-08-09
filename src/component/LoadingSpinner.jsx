@@ -14,9 +14,9 @@ const rotate = keyframes`
 `;
 
 const LoadingSpinner = styled.div`
-  display: inline-block;
   width: 80px;
   height: 80px;
+  margin-top: 10%;
 
   &:after {
     content: " ";
@@ -33,8 +33,12 @@ const LoadingSpinner = styled.div`
 
 const LoadingContainer = styled.div`
   z-index: 1;
-  height: 1000px;
-  width: 1000px;
+  height: 100vh;
+  width: 100vw;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `
 
 export default ({ videoIsReady, isModelReady }) => {
