@@ -16,7 +16,7 @@ const Pose = () => {
   const [startingPoints, setStartingPoints] = useState([]);
   const [videoIsReady, setVideoIsReady] = useState(false);
   const [videoError, setVideoError] = useState(null);
-  const [isOutOfPosture, setIsOutOfPosture] = useState(false);
+  const [postureError, setIsOutOfPostureError] = useState([]);
 
   // SETUP CAMERA
   useEffect(() => {
@@ -61,12 +61,13 @@ const Pose = () => {
           drawKeyPoints(keypoints, canvasContext);
         }
         if (startingPoints.length > 0) {
-          let isPostureOkay = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints, minDeviationPercentage: 40});
-          if (!isPostureOkay && timeOutOfPosture.current < 600) {
+          const postureCalc = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints, minDeviationPercentage: 40});
+          console.log(postureCalc);
+          if (postureCalc.length > 0 && timeOutOfPosture.current < 600) {
             timeOutOfPosture.current ++;
           }
           if (timeOutOfPosture.current === 600) {
-            setIsOutOfPosture(true);
+            setIsOutOfPostureError(postureCalc);
           }
           console.log(timeOutOfPosture.current);
         }
@@ -107,8 +108,8 @@ const Pose = () => {
       ></canvas>
       {(videoIsReady || !!model) && (
         <div style={{ marginTop: "30px" }}>
-          <button disabled={startingPoints.length > 0 && !isOutOfPosture} onClick={() => {
-            setIsOutOfPosture(false);
+          <button disabled={startingPoints.length > 0 && postureError.length === 0} onClick={() => {
+            setIsOutOfPostureError([]);
             setStartingPoints(keyPointsRef.current);
             timeOutOfPosture.current = 0;
           }}>
@@ -119,11 +120,11 @@ const Pose = () => {
           }}>
             Stop posture tracking
           </button>
-          {isOutOfPosture && (
+          {postureError.length > 0 && postureError.map(({ message }) => (
             <div>
-              <p>uh oh you're out of posture, click the "Set starting points" once you're back in posture to reset</p>
+              <p>{message}</p>
             </div>
-          )}
+          ))}
         </div>
       )}
     </PageContainer>
