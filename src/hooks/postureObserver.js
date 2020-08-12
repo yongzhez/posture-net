@@ -6,6 +6,12 @@ const LIST_OF_BODY_PARTS = [
   "rightEar",
 ];
 
+export const POSTURE_ERROR_TYPES = {
+  HEAD_TILT_RIGHT: { message: 'leaning to the right too much', type: 'HEAD_TILT_RIGHT' },
+  HEAD_TILT_LEFT: { message: 'leaning to the left too much', type: 'HEAD_TILT_LEFT' },
+  DEFAULT: { message: 'you\'ve moved too far from the starting points ', type: 'DEFAULT'}
+}
+
 const isHeadTilted = ({
   keypoints,
   startingPoints,
@@ -29,9 +35,9 @@ const isHeadTilted = ({
   // console.log(slope);
   const xDiff = filteredStartingPoints[0].position.x - filteredkeyPoints[0].position.x
   if (xDiff > 0 && Math.abs(xDiff) > minDiff) {
-    return [{ message: 'leaning to the right too much', type: 'headTilt'}];
+    return [POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT];
   } else if (xDiff < 0 && Math.abs(xDiff) > minDiff) {
-    return [{ message: 'leaning to the left too much', type: 'headTilt' }];
+    return [POSTURE_ERROR_TYPES.HEAD_TILT_LEFT];
   }
 
   return [];
@@ -40,35 +46,35 @@ const isHeadTilted = ({
 export const postureObserverHelper = ({
   keypoints,
   startingPoints,
-  minDeviationPercentage,
+  minDeviationPercentage = 40,
 }) => {
-  const filteredStartingPoints = startingPoints.filter(({ part }) =>
-    LIST_OF_BODY_PARTS.includes(part)
-  );
+  // const filteredStartingPoints = startingPoints.filter(({ part }) =>
+  //   LIST_OF_BODY_PARTS.includes(part)
+  // );
 
   const headTiltCalc = isHeadTilted({ keypoints, startingPoints });
 
-  const isPostureFaulty = keypoints
-    .filter(({ part }) => LIST_OF_BODY_PARTS.includes(part))
-    .some((keypoint, index) => {
-      if (filteredStartingPoints[index].part !== keypoint.part) {
-        return true;
-      }
-      const xDiff = Math.abs(
-        filteredStartingPoints[index].position.x - keypoint.position.x
-      );
-      const yDiff = Math.abs(
-        filteredStartingPoints[index].position.y - keypoint.position.y
-      );
-      // use pythagorean theorem to get the true difference betwen points
-      const difference = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
-      if (difference > minDeviationPercentage) {
-        return true;
-      }
-      return false;
-    }, []);
+  // const isPostureFaulty = keypoints
+  //   .filter(({ part }) => LIST_OF_BODY_PARTS.includes(part))
+  //   .some((keypoint, index) => {
+  //     if (filteredStartingPoints[index].part !== keypoint.part) {
+  //       return true;
+  //     }
+  //     const xDiff = Math.abs(
+  //       filteredStartingPoints[index].position.x - keypoint.position.x
+  //     );
+  //     const yDiff = Math.abs(
+  //       filteredStartingPoints[index].position.y - keypoint.position.y
+  //     );
+  //     // use pythagorean theorem to get the true difference betwen points
+  //     const difference = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
+  //     if (difference > minDeviationPercentage) {
+  //       return true;
+  //     }
+  //     return false;
+  //   }, []);
 
-    const defaultCalc = isPostureFaulty ? [{ message: 'you\'ve moved too far from the starting points ', type: 'default'}] : [];
+  //   const defaultCalc = isPostureFaulty ? [POSTURE_ERROR_TYPES.DEFAULT] : [];
 
-  return [...headTiltCalc, ...defaultCalc];
+  return [...headTiltCalc];
 };

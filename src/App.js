@@ -1,39 +1,25 @@
 import React, { useRef, useEffect, useState } from "react";
 
-import usePoseNet, { drawKeyPoints } from "./hooks/poseNetSetup";
-import { postureObserverHelper } from './hooks/postureObserver';
+import { usePoseNet, useWebCam, drawKeyPoints } from "./hooks/setup";
+import { postureObserverHelper, POSTURE_ERROR_TYPES } from './hooks/postureObserver';
 
 import LoadingSpinner from './component/LoadingSpinner';
 import PageContainer from './component/PageContainer';
-import { VIDEO_VARIABLES, MINIMUM_CONFIDENCE_SCORE } from './config.json';
+import { VIDEO_VARIABLES, MINIMUM_CONFIDENCE_SCORE, SECONDS_TO_ERROR } from './config.json';
 
 const Pose = () => {
   const videoRef = useRef();
   const canvasRef = useRef();
   const keyPointsRef = useRef([]);
-  const timeOutOfPosture = useRef(0);
-  const timeNeckTilted = useRef(0);
+  const defaultPostureState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.DEFAULT });
+  const neckTiltLeftState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_LEFT });
+  const neckTiltRightState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT });;
 
   const [startingPoints, setStartingPoints] = useState([]);
-  const [videoIsReady, setVideoIsReady] = useState(false);
-  const [videoError, setVideoError] = useState(null);
   const [postureError, setIsOutOfPostureError] = useState([]);
 
   // SETUP CAMERA
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment", video: { width: VIDEO_VARIABLES.width, height: VIDEO_VARIABLES.height} } })
-      .then((stream) => {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = function(e) {
-          videoRef.current.play();
-          setVideoIsReady(true);
-        };
-        videoRef.current.width = VIDEO_VARIABLES.width;
-        videoRef.current.height = VIDEO_VARIABLES.height;
-      })
-      .catch((err) => setVideoError(err));
-  }, []);
+  const { videoIsReady, videoError } = useWebCam({ videoRef });
 
   // SETUP POSENET WHEN CAMERA IS READY
   const model = usePoseNet({ videoRef, videoIsReady });
@@ -62,15 +48,28 @@ const Pose = () => {
           drawKeyPoints(keypoints, canvasContext);
         }
         if (startingPoints.length > 0 && postureError.length === 0) {
-          const postureCalc = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints, minDeviationPercentage: 40});
-          if (timeOutOfPosture.current === 600 || timeNeckTilted.current === 600) {
-            setIsOutOfPostureError(postureCalc);
+          const postureCalc = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints });
+          if (postureCalc.length === 0) {
+            defaultPostureState.current.timeOutOfPosition = 0;
+            neckTiltLeftState.current.timeOutOfPosition = 0;
+            neckTiltRightState.current.timeOutOfPosition = 0;
+          }
+          if (defaultPostureState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
+            neckTiltLeftState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
+            neckTiltRightState.current.timeOutOfPosition === SECONDS_TO_ERROR) {
+            const errorSet = [defaultPostureState.current, neckTiltRightState.current, neckTiltLeftState.current].filter(({
+              timeOutOfPosition
+            }) => timeOutOfPosition === 600 );
+            setIsOutOfPostureError(errorSet);
           } else {
-            if (postureCalc.some(({ type }) => type === "default")) {
-              timeOutOfPosture.current ++;
+            if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.DEFAULT.type)) {
+              defaultPostureState.current.timeOutOfPosition ++;
             }
-            if (postureCalc.some(({ type }) => type === "headTilt")) {
-              timeNeckTilted.current ++;
+            if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_LEFT.type)) {
+              neckTiltLeftState.current.timeOutOfPosition ++;
+            }
+            if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT.type)) {
+              neckTiltRightState.current.timeOutOfPosition ++;
             }
           }
         }
@@ -114,8 +113,9 @@ const Pose = () => {
           <button disabled={startingPoints.length > 0 && postureError.length === 0} onClick={() => {
             setIsOutOfPostureError([]);
             setStartingPoints(keyPointsRef.current);
-            timeOutOfPosture.current = 0;
-            timeNeckTilted.current = 0;
+            defaultPostureState.current.timeOutOfPosition = 0;
+            neckTiltLeftState.current.timeOutOfPosition = 0;
+            neckTiltRightState.current.timeOutOfPosition = 0;
           }}>
             Set starting points
           </button>
@@ -127,8 +127,8 @@ const Pose = () => {
           {postureError.length > 0 && (
             <div>
               <p>uh oh you're out of positions for the reasons below, when you're ready press the set starting points to reset</p>
-              {postureError.map(({ message }) => (
-                <div>
+              {postureError.map(({ message }, index) => (
+                <div key={index}>
                   <p>{message}</p>
                 </div>
               ))}
