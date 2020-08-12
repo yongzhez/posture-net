@@ -10,7 +10,7 @@ const isHeadTilted = ({
   keypoints,
   startingPoints,
   minPartConfidenceScore = 0.99,
-  minSlopeDeviation = 5
+  minDiff = 5
 }) => {
   const filteredStartingPoints = startingPoints.filter(({ part }) =>
     ["leftEye", "rightEye"].includes(part)
@@ -24,11 +24,14 @@ const isHeadTilted = ({
   }
 
   // only need to look at one of the 2 eyes
-  const slope = (filteredStartingPoints[0].position.y - filteredkeyPoints[0].position.y) / (filteredStartingPoints[0].position.x - filteredkeyPoints[0].position.x);
-  if (slope > 1 && slope > minSlopeDeviation) {
-    return [{ message: 'leaning to the left too much', type: 'headTilt'}];
-  } else if (slope < -1 && slope > -minSlopeDeviation) {
-    return [{ message: 'leaning to the right too much', type: 'headTilt' }];
+  // const slope = (filteredStartingPoints[0].position.y - filteredkeyPoints[0].position.y) / (filteredStartingPoints[0].position.x - filteredkeyPoints[0].position.x);
+  // console.log(`y1: ${filteredStartingPoints[0].position.y}, y2: ${filteredkeyPoints[0].position.y}, x1 ${filteredStartingPoints[0].position.x}, x2 ${filteredkeyPoints[0].position.x}`)
+  // console.log(slope);
+  const xDiff = filteredStartingPoints[0].position.x - filteredkeyPoints[0].position.x
+  if (xDiff > 0 && Math.abs(xDiff) > minDiff) {
+    return [{ message: 'leaning to the right too much', type: 'headTilt'}];
+  } else if (xDiff < 0 && Math.abs(xDiff) > minDiff) {
+    return [{ message: 'leaning to the left too much', type: 'headTilt' }];
   }
 
   return [];
@@ -65,7 +68,7 @@ export const postureObserverHelper = ({
       return false;
     }, []);
 
-    const defaultCalc = isPostureFaulty ? [{ message: 'uh oh you\'re out of posture, click the "Set starting points" once you\'re back in posture to reset', type: 'default'}] : [];
+    const defaultCalc = isPostureFaulty ? [{ message: 'you\'ve moved too far from the starting points ', type: 'default'}] : [];
 
   return [...headTiltCalc, ...defaultCalc];
 };

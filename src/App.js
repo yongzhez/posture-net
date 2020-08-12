@@ -12,6 +12,7 @@ const Pose = () => {
   const canvasRef = useRef();
   const keyPointsRef = useRef([]);
   const timeOutOfPosture = useRef(0);
+  const timeNeckTilted = useRef(0);
 
   const [startingPoints, setStartingPoints] = useState([]);
   const [videoIsReady, setVideoIsReady] = useState(false);
@@ -60,16 +61,18 @@ const Pose = () => {
           keyPointsRef.current = keypoints;
           drawKeyPoints(keypoints, canvasContext);
         }
-        if (startingPoints.length > 0) {
+        if (startingPoints.length > 0 && postureError.length === 0) {
           const postureCalc = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints, minDeviationPercentage: 40});
-          console.log(postureCalc);
-          if (postureCalc.length > 0 && timeOutOfPosture.current < 600) {
-            timeOutOfPosture.current ++;
-          }
-          if (timeOutOfPosture.current === 600) {
+          if (timeOutOfPosture.current === 600 || timeNeckTilted.current === 600) {
             setIsOutOfPostureError(postureCalc);
+          } else {
+            if (postureCalc.some(({ type }) => type === "default")) {
+              timeOutOfPosture.current ++;
+            }
+            if (postureCalc.some(({ type }) => type === "headTilt")) {
+              timeNeckTilted.current ++;
+            }
           }
-          console.log(timeOutOfPosture.current);
         }
       };
 
@@ -112,6 +115,7 @@ const Pose = () => {
             setIsOutOfPostureError([]);
             setStartingPoints(keyPointsRef.current);
             timeOutOfPosture.current = 0;
+            timeNeckTilted.current = 0;
           }}>
             Set starting points
           </button>
@@ -120,11 +124,16 @@ const Pose = () => {
           }}>
             Stop posture tracking
           </button>
-          {postureError.length > 0 && postureError.map(({ message }) => (
+          {postureError.length > 0 && (
             <div>
-              <p>{message}</p>
+              <p>uh oh you're out of positions for the reasons below, when you're ready press the set starting points to reset</p>
+              {postureError.map(({ message }) => (
+                <div>
+                  <p>{message}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
     </PageContainer>
