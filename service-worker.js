@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/posture-net/build/precache-manifest.9083da1442c5a4c9c2591a5e5b33ab8a.js"
+  "/posture-net/build/precache-manifest.b966ee6d4b414f0d7439d9c8556db9f7.js"
 );
 
 self.addEventListener('message', (event) => {
