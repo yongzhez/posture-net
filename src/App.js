@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import _ from 'lodash';
 
 import { usePoseNet, useWebCam, drawKeyPoints } from "./hooks/setup";
 import { postureObserverHelper, POSTURE_ERROR_TYPES } from './hooks/postureObserver';
@@ -6,8 +7,12 @@ import { postureObserverHelper, POSTURE_ERROR_TYPES } from './hooks/postureObser
 import LoadingSpinner from './component/LoadingSpinner';
 import PageContainer from './component/PageContainer';
 import { VIDEO_VARIABLES, MINIMUM_CONFIDENCE_SCORE, SECONDS_TO_ERROR } from './config.json';
+import { sendNotification } from "./utilities/notification";
 
-const Pose = () => {
+
+const Pose = ({
+  isNotificationsGranted
+}) => {
   const videoRef = useRef();
   const canvasRef = useRef();
   const keyPointsRef = useRef([]);
@@ -47,6 +52,7 @@ const Pose = () => {
           keyPointsRef.current = keypoints;
           drawKeyPoints(keypoints, canvasContext);
         }
+        // remove stop based on error
         if (startingPoints.length > 0 && postureError.length === 0) {
           const postureCalc = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints });
           if (postureCalc.length === 0) {
@@ -61,6 +67,9 @@ const Pose = () => {
               timeOutOfPosition
             }) => timeOutOfPosition === 600 );
             setIsOutOfPostureError(errorSet);
+            if (isNotificationsGranted) {
+              sendNotification(errorSet);
+            }
           } else {
             if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.DEFAULT.type)) {
               defaultPostureState.current.timeOutOfPosition ++;

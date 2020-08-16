@@ -7,9 +7,9 @@ const LIST_OF_BODY_PARTS = [
 ];
 
 export const POSTURE_ERROR_TYPES = {
-  HEAD_TILT_RIGHT: { message: 'leaning to the right too much', type: 'HEAD_TILT_RIGHT' },
-  HEAD_TILT_LEFT: { message: 'leaning to the left too much', type: 'HEAD_TILT_LEFT' },
-  DEFAULT: { message: 'you\'ve moved too far from the starting points ', type: 'DEFAULT'}
+  HEAD_TILT_RIGHT: { message: 'leaning to the right too much', shortMessage: 'leaning right', type: 'HEAD_TILT_RIGHT' },
+  HEAD_TILT_LEFT: { message: 'leaning to the left too much', shortMessage: 'leaning left', type: 'HEAD_TILT_LEFT' },
+  DEFAULT: { message: 'you\'ve moved too far from the starting points ', shortMessage: 'out of position', type: 'DEFAULT'}
 }
 
 const isHeadTilted = ({

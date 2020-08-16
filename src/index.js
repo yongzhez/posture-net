@@ -3,10 +3,14 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import { setupNotification } from './utilities/notification';
+
+// check if the user can use notifications
+const isNotificationsGranted = setupNotification();
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <App isNotificationsGranted={isNotificationsGranted === 'granted'}/>
   </React.StrictMode>,
   document.getElementById('root')
 );
@@ -15,3 +19,4 @@ ReactDOM.render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
+
