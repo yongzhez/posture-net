@@ -18,7 +18,11 @@ export const setupNotification = () => {
 };
 
 export const sendNotification = _.debounce((errorSet) => {
-  const reasonsList = errorSet.reduce((combinedStr, currentError) => {
+  console.log('hi');
+  const reasonsList = errorSet.reduce((combinedStr, currentError, currentIndex) => {
+    if (currentIndex === 0) {
+      return currentError.shortMessage;
+    }
     return `${combinedStr}, \n ${currentError.shortMessage}`;
   }, '')
   const body = `Out of posture: ${reasonsList}`

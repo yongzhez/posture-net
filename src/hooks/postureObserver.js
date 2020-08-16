@@ -16,7 +16,7 @@ const isHeadTilted = ({
   keypoints,
   startingPoints,
   minPartConfidenceScore = 0.99,
-  minDiff = 5
+  minDiff = 30
 }) => {
   const filteredStartingPoints = startingPoints.filter(({ part }) =>
     ["leftEye", "rightEye"].includes(part)

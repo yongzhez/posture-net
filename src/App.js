@@ -20,6 +20,8 @@ const Pose = ({
   const neckTiltLeftState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_LEFT });
   const neckTiltRightState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT });;
 
+  const debugRef = useRef();
+
   const [startingPoints, setStartingPoints] = useState([]);
   const [postureError, setIsOutOfPostureError] = useState([]);
 
@@ -52,33 +54,37 @@ const Pose = ({
           keyPointsRef.current = keypoints;
           drawKeyPoints(keypoints, canvasContext);
         }
+        debugRef.current.innerHTML = neckTiltLeftState.current.timeOutOfPosition;
         // remove stop based on error
-        if (startingPoints.length > 0 && postureError.length === 0) {
+        if (startingPoints.length > 0) {
           const postureCalc = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints });
           if (postureCalc.length === 0) {
             defaultPostureState.current.timeOutOfPosition = 0;
             neckTiltLeftState.current.timeOutOfPosition = 0;
             neckTiltRightState.current.timeOutOfPosition = 0;
+            setIsOutOfPostureError([]);
           }
-          if (defaultPostureState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
-            neckTiltLeftState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
-            neckTiltRightState.current.timeOutOfPosition === SECONDS_TO_ERROR) {
-            const errorSet = [defaultPostureState.current, neckTiltRightState.current, neckTiltLeftState.current].filter(({
-              timeOutOfPosition
-            }) => timeOutOfPosition === 600 );
-            setIsOutOfPostureError(errorSet);
-            if (isNotificationsGranted) {
-              sendNotification(errorSet);
-            }
-          } else {
-            if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.DEFAULT.type)) {
-              defaultPostureState.current.timeOutOfPosition ++;
-            }
-            if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_LEFT.type)) {
-              neckTiltLeftState.current.timeOutOfPosition ++;
-            }
-            if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT.type)) {
-              neckTiltRightState.current.timeOutOfPosition ++;
+          else if (postureError.length === 0) {
+            if ((defaultPostureState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
+              neckTiltLeftState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
+              neckTiltRightState.current.timeOutOfPosition === SECONDS_TO_ERROR)) {
+              const errorSet = [defaultPostureState.current, neckTiltRightState.current, neckTiltLeftState.current].filter(({
+                timeOutOfPosition
+              }) => timeOutOfPosition === 600 );
+              setIsOutOfPostureError(errorSet);
+              if (isNotificationsGranted) {
+                sendNotification(errorSet);
+              }
+            } else {
+              if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.DEFAULT.type)) {
+                defaultPostureState.current.timeOutOfPosition ++;
+              }
+              if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_LEFT.type)) {
+                neckTiltLeftState.current.timeOutOfPosition ++;
+              }
+              if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT.type)) {
+                neckTiltRightState.current.timeOutOfPosition ++;
+              }
             }
           }
         }
@@ -117,6 +123,7 @@ const Pose = ({
         ref={canvasRef}
         id="c1"
       ></canvas>
+      <div ref={debugRef}></div>
       {(videoIsReady || !!model) && (
         <div style={{ marginTop: "30px" }}>
           <button disabled={startingPoints.length > 0 && postureError.length === 0} onClick={() => {
