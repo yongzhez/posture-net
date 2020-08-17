@@ -22,7 +22,7 @@ interface WebCamState {
   videoIsReady: boolean
 }
 
-export const useWebCam = (videoRef: HTMLVideoElement | null | undefined): WebCamState => {
+export const useWebCam = (videoRef: any, isLoadedVideo: boolean): WebCamState => {
   const [videoError, setVideoError] = useState<string>('');
   const [videoIsReady, setVideoIsReady] = useState<boolean>(false);
 
@@ -30,16 +30,13 @@ export const useWebCam = (videoRef: HTMLVideoElement | null | undefined): WebCam
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "environment" } })
       .then((stream) => {
-        debugger;
-        if (videoRef) {
-          videoRef.srcObject = stream;
-          videoRef.onloadedmetadata = function (e) {
+        videoRef.srcObject = stream;
+          videoRef.onloadedmetadata = function () {
             videoRef.play();
             setVideoIsReady(true);
           };
           videoRef.width = VIDEO_VARIABLES.width;
           videoRef.height = VIDEO_VARIABLES.height;
-        }
       })
       .catch((err: string) => setVideoError(err));
     // reasoning: need to only render on mount or else it'll keep trying to grab the user's media

@@ -19,12 +19,13 @@ interface ErrorMetaDataWithCount extends ErrorMetaData {
 const Pose = ({
   isNotificationsGranted
 }: PoseProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null!);
-  const canvasRef = useRef<HTMLCanvasElement>(null!);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const keyPointsRef = useRef<Array<posenet.Keypoint>>([]);
   const postureState = useRef([{ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.DEFAULT },
     { timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_LEFT },
     { timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT }]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const debugRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +33,7 @@ const Pose = ({
   const [postureError, setIsOutOfPostureError] = useState<Array<ErrorMetaDataWithCount>>([]);
 
   // SETUP CAMERA
-  const { videoIsReady, videoError } = useWebCam(videoRef.current);
+  const { videoIsReady, videoError } = useWebCam(videoRef.current, isLoaded);
 
   // SETUP POSENET WHEN CAMERA IS READY
   const model = usePoseNet(videoRef.current, videoIsReady);
@@ -112,7 +113,8 @@ const Pose = ({
       </div>
     );
   }
-
+  console.log(videoRef);
+  console.log(canvasRef)
   return (
     <PageContainer>
       <LoadingSpinner videoIsReady={videoIsReady} isModelReady={!!model} />
