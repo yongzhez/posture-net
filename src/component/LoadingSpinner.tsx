@@ -40,10 +40,14 @@ const LoadingContainer = styled.div`
   flex-direction: column;
   align-items: center;
 `
+interface LoadingSpinnerProps {
+  videoIsReady: boolean
+  isModelReady: boolean
+}
 
-export default ({ videoIsReady, isModelReady }) => {
+export default ({ videoIsReady, isModelReady }: LoadingSpinnerProps) => {
 
-  const renderLoadingMessage = (videoIsReady, isModelReady) => {
+  const renderLoadingMessage = (videoIsReady: boolean, isModelReady: boolean): string => {
     if (!videoIsReady && !isModelReady) {
         return "preparing webcam";
     } else if (videoIsReady && !isModelReady) {

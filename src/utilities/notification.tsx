@@ -1,7 +1,10 @@
 
 import _ from 'lodash';
+import { ErrorMetaData } from '../hooks/postureObserver';
 
-export const setupNotification = () => {
+type NotificationPermission = "granted" | "denied" | "default"
+
+export const setupNotification = () : NotificationPermission => {
   let notificationStatus = Notification.permission;
   if (!("Notification" in window)) {
     alert("This browser does not support desktop notification");
@@ -17,9 +20,9 @@ export const setupNotification = () => {
   return notificationStatus;
 };
 
-export const sendNotification = _.debounce((errorSet) => {
+export const sendNotification = _.debounce((errorSet: Array<ErrorMetaData>) => {
   console.log('hi');
-  const reasonsList = errorSet.reduce((combinedStr, currentError, currentIndex) => {
+  const reasonsList = errorSet.reduce((combinedStr: string, currentError: ErrorMetaData, currentIndex: number) => {
     if (currentIndex === 0) {
       return currentError.shortMessage;
     }
