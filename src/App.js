@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-import _ from 'lodash';
 
 import { usePoseNet, useWebCam, drawKeyPoints } from "./hooks/setup";
 import { postureObserverHelper, POSTURE_ERROR_TYPES } from './hooks/postureObserver';
@@ -16,9 +15,9 @@ const Pose = ({
   const videoRef = useRef();
   const canvasRef = useRef();
   const keyPointsRef = useRef([]);
-  const defaultPostureState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.DEFAULT });
-  const neckTiltLeftState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_LEFT });
-  const neckTiltRightState = useRef({ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT });;
+  const postureState = useRef([{ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.DEFAULT },
+    { timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_LEFT },
+    { timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT }]);
 
   const debugRef = useRef();
 
@@ -54,37 +53,31 @@ const Pose = ({
           keyPointsRef.current = keypoints;
           drawKeyPoints(keypoints, canvasContext);
         }
-        debugRef.current.innerHTML = neckTiltLeftState.current.timeOutOfPosition;
+        debugRef.current.innerHTML = postureState.current[1].timeOutOfPosition;
         // remove stop based on error
         if (startingPoints.length > 0) {
           const postureCalc = postureObserverHelper({ keypoints: keyPointsRef.current, startingPoints });
           if (postureCalc.length === 0) {
-            defaultPostureState.current.timeOutOfPosition = 0;
-            neckTiltLeftState.current.timeOutOfPosition = 0;
-            neckTiltRightState.current.timeOutOfPosition = 0;
+            postureState.current = postureState.current.map(state => { return { ...state, timeOutOfPosition: 0 }});
             setIsOutOfPostureError([]);
           }
           else if (postureError.length === 0) {
-            if ((defaultPostureState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
-              neckTiltLeftState.current.timeOutOfPosition === SECONDS_TO_ERROR ||
-              neckTiltRightState.current.timeOutOfPosition === SECONDS_TO_ERROR)) {
-              const errorSet = [defaultPostureState.current, neckTiltRightState.current, neckTiltLeftState.current].filter(({
+            if (postureState.current.some(({ timeOutOfPosition }) => timeOutOfPosition === SECONDS_TO_ERROR)) {
+              const errorSet = postureState.current.filter(({
                 timeOutOfPosition
-              }) => timeOutOfPosition === 600 );
+              }) => timeOutOfPosition === SECONDS_TO_ERROR );
               setIsOutOfPostureError(errorSet);
               if (isNotificationsGranted) {
                 sendNotification(errorSet);
               }
             } else {
-              if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.DEFAULT.type)) {
-                defaultPostureState.current.timeOutOfPosition ++;
-              }
-              if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_LEFT.type)) {
-                neckTiltLeftState.current.timeOutOfPosition ++;
-              }
-              if (postureCalc.some(({ type }) => type === POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT.type)) {
-                neckTiltRightState.current.timeOutOfPosition ++;
-              }
+              postureState.current = postureState.current.map(state => {
+                if (postureCalc.findIndex(({ type }) => state.type === type) > -1){
+                  const updatedState = { ...state, timeOutOfPosition: state.timeOutOfPosition + 1 }
+                  return updatedState;
+                }
+                return state;
+              })
             }
           }
         }
@@ -116,22 +109,19 @@ const Pose = ({
         style={{ position: "fixed", zIndex: -1 }}
         ref={videoRef}
         autoPlay
-      ></video>
+      />
       <canvas
         width={VIDEO_VARIABLES.width}
         height={VIDEO_VARIABLES.height}
         ref={canvasRef}
-        id="c1"
-      ></canvas>
-      <div ref={debugRef}></div>
+      />
+      <div ref={debugRef}/>
       {(videoIsReady || !!model) && (
         <div style={{ marginTop: "30px" }}>
           <button disabled={startingPoints.length > 0 && postureError.length === 0} onClick={() => {
             setIsOutOfPostureError([]);
             setStartingPoints(keyPointsRef.current);
-            defaultPostureState.current.timeOutOfPosition = 0;
-            neckTiltLeftState.current.timeOutOfPosition = 0;
-            neckTiltRightState.current.timeOutOfPosition = 0;
+            postureState.current = postureState.current.map(state => { return { ...state, timeOutOfPosition: 0 }});
           }}>
             Set starting points
           </button>
