@@ -22,10 +22,10 @@ export const POSTURE_ERROR_TYPES = {
 }
 
 export const isNotAlignedWithStartingPoints = (
-  keypoints: Array<posenet.Keypoint>,
-  startingPoints: Array<posenet.Keypoint>,
+  keypoints: posenet.Keypoint[],
+  startingPoints: posenet.Keypoint[],
   minDeviationPercentage = 40,
-) : Array<ErrorMetaData> => {
+) : ErrorMetaData[] => {
 
   const filteredStartingPoints = startingPoints.filter(({ part }) =>
     LIST_OF_BODY_PARTS.includes(part)
@@ -56,11 +56,11 @@ export const isNotAlignedWithStartingPoints = (
 }
 
 const isHeadTilted = (
-  keypoints: Array<posenet.Keypoint>,
-  startingPoints: Array<posenet.Keypoint>,
+  keypoints: posenet.Keypoint[],
+  startingPoints: posenet.Keypoint[],
   minPartConfidenceScore = 0.99,
   minDiff = 30
-) : Array<ErrorMetaData> => {
+) : ErrorMetaData[] => {
   const filteredStartingPoints = startingPoints.filter(({ part }) =>
     ["leftEye", "rightEye"].includes(part)
   );
@@ -83,9 +83,9 @@ const isHeadTilted = (
 };
 
 export const postureObserverHelper = (
-  keypoints: Array<posenet.Keypoint>,
-  startingPoints: Array<posenet.Keypoint>,
-) : Array<ErrorMetaData> => {
+  keypoints: posenet.Keypoint[],
+  startingPoints: posenet.Keypoint[],
+) : ErrorMetaData[] => {
 
   const headTiltCalc = isHeadTilted(keypoints, startingPoints);
 

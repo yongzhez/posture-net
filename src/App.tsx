@@ -12,7 +12,7 @@ interface PoseProps {
   isNotificationsGranted: boolean
 }
 
-interface ErrorMetaDataWithCount extends ErrorMetaData {
+export interface ErrorMetaDataWithCount extends ErrorMetaData {
   timeOutOfPosition: number
 }
 
@@ -21,22 +21,21 @@ const Pose = ({
 }: PoseProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const keyPointsRef = useRef<Array<posenet.Keypoint>>([]);
+  const keyPointsRef = useRef<posenet.Keypoint[]>([]);
   const postureState = useRef([{ timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.DEFAULT },
     { timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_LEFT },
     { timeOutOfPosition: 0, ...POSTURE_ERROR_TYPES.HEAD_TILT_RIGHT }]);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const debugRef = useRef<HTMLDivElement>(null);
 
-  const [startingPoints, setStartingPoints] = useState<Array<posenet.Keypoint>>([]);
-  const [postureError, setIsOutOfPostureError] = useState<Array<ErrorMetaDataWithCount>>([]);
+  const [startingPoints, setStartingPoints] = useState<posenet.Keypoint[]>([]);
+  const [postureError, setIsOutOfPostureError] = useState<ErrorMetaDataWithCount[]>([]);
 
   // SETUP CAMERA
-  const { videoIsReady, videoError } = useWebCam(videoRef.current, isLoaded);
+  const { videoIsReady, videoError } = useWebCam(videoRef);
 
   // SETUP POSENET WHEN CAMERA IS READY
-  const model = usePoseNet(videoRef.current, videoIsReady);
+  const model = usePoseNet(videoIsReady);
 
   // ONLY WHEN CAMERA AND POSENET IS READY, START RECORDING POSES
   useEffect(() => {
@@ -50,7 +49,7 @@ const Pose = ({
       const canvasContext = canvasRef.current.getContext("2d");
       if (canvasContext) {
         const estimate = async () => {
-          const { keypoints, score } = await model.estimateSinglePose((videoRef.current as any),{ flipHorizontal: false });
+          const { keypoints, score } = await model.estimateSinglePose((videoRef.current as HTMLVideoElement),{ flipHorizontal: false });
           canvasContext.drawImage(
             (videoRef.current as CanvasImageSource),
             0,
@@ -113,8 +112,6 @@ const Pose = ({
       </div>
     );
   }
-  console.log(videoRef);
-  console.log(canvasRef)
   return (
     <PageContainer>
       <LoadingSpinner videoIsReady={videoIsReady} isModelReady={!!model} />

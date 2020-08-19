@@ -20,7 +20,7 @@ export const setupNotification = () : NotificationPermission => {
   return notificationStatus;
 };
 
-export const sendNotification = _.debounce((errorSet: Array<ErrorMetaData>) => {
+export const sendNotification = _.debounce((errorSet: ErrorMetaData[]) => {
   console.log('hi');
   const reasonsList = errorSet.reduce((combinedStr: string, currentError: ErrorMetaData, currentIndex: number) => {
     if (currentIndex === 0) {

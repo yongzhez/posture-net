@@ -2,18 +2,24 @@ import { useEffect, useState } from "react";
 import * as posenet from "@tensorflow-models/posenet";
 import { VIDEO_VARIABLES, KEYPOINT_CONFIDENCE } from '../config.json';
 
-const setupAndStartModel = async (setPoseNet: React.Dispatch<React.SetStateAction<posenet.PoseNet | null>>) => {
-  const poseNetModel: posenet.PoseNet = await posenet.load();
+
+const setupAndStartModel = async (
+  setPoseNet: (val: posenet.PoseNet) => void
+) => {
+  const poseNetModel = await posenet.load();
   setPoseNet(poseNetModel);
 };
 
-export const usePoseNet = (videoRef: HTMLVideoElement | null | undefined, videoIsReady: boolean): posenet.PoseNet | null => {
-  const [poseNet, setPoseNet] = useState<posenet.PoseNet | null>(null);
+export const usePoseNet = (
+  videoIsReady: boolean
+): posenet.PoseNet | undefined => {
+  const [poseNet, setPoseNet] = useState<posenet.PoseNet | undefined>(undefined);
+
   useEffect(() => {
     if (videoIsReady) {
       setupAndStartModel(setPoseNet);
     }
-  }, [videoRef, videoIsReady]);
+  }, [videoIsReady]);
   return poseNet;
 };
 
@@ -22,21 +28,25 @@ interface WebCamState {
   videoIsReady: boolean
 }
 
-export const useWebCam = (videoRef: any, isLoadedVideo: boolean): WebCamState => {
-  const [videoError, setVideoError] = useState<string>('');
-  const [videoIsReady, setVideoIsReady] = useState<boolean>(false);
-
+export const useWebCam = (
+  videoElement: React.MutableRefObject<HTMLVideoElement | null>
+): WebCamState => {
+  const [videoError, setVideoError] = useState('');
+  const [videoIsReady, setVideoIsReady] = useState(false);
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "environment" } })
       .then((stream) => {
-        videoRef.srcObject = stream;
-          videoRef.onloadedmetadata = function () {
-            videoRef.play();
+        const element = videoElement?.current;
+        if (element) {
+          element.srcObject = stream;
+          element.onloadedmetadata = function () {
+            element.play();
             setVideoIsReady(true);
           };
-          videoRef.width = VIDEO_VARIABLES.width;
-          videoRef.height = VIDEO_VARIABLES.height;
+          element.width = VIDEO_VARIABLES.width;
+          element.height = VIDEO_VARIABLES.height;
+        }
       })
       .catch((err: string) => setVideoError(err));
     // reasoning: need to only render on mount or else it'll keep trying to grab the user's media
@@ -47,7 +57,7 @@ export const useWebCam = (videoRef: any, isLoadedVideo: boolean): WebCamState =>
 }
 
 export const drawKeyPoints = (
-  keypoints: Array<posenet.Keypoint>,
+  keypoints: posenet.Keypoint[],
   canvasRef: CanvasRenderingContext2D,
   skeletonColor = "green"
 ) => {
